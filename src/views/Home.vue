@@ -1,13 +1,13 @@
 <template>
   <div class="home">
-    <img ref="img" alt="Vue logo" src="../assets/test.png" style="width: 512px">
+    <img ref="img" alt="Vue logo" src="../assets/avatar4.jpeg" style="width: 512px">
     <canvas ref="canvas"></canvas>
     <button @click="draw">draw</button>
   </div>
 </template>
 
 <script>
-import { Pixelit } from '../plugins/ pixelit'
+import { Pixelit } from '../units/pixelit'
 
 export default {
   name: 'Home',
@@ -75,9 +75,9 @@ export default {
         .setWidth(64).setHeight(64).resizeImage()
         // .convertGrayscale()
         .convertPalette()
-        .setWidth(1024).setHeight(1024).resizeImage()
+        .setWidth(512).setHeight(512).resizeImage()
         .drawLine()
-        .fillNumbers()
+        // .fillNumbers()
 
       console.log(px.getPaletteMap())
       // .setWidth(512).setHeight(512).resizeImage()

@@ -3,7 +3,8 @@
  * @author José Moreira @ <https://github.com/giventofly/pixelit>
  **/
 
-// eslint-disable-next-line no-unused-vars
+import { isLightColor, RGB2Lab } from './color'
+
 export class Pixelit {
   constructor (config = {}) {
     // target for canvas
@@ -12,6 +13,10 @@ export class Pixelit {
     this.drawfrom = config.from || document.getElementById('pixelitimg')
     // hide image element
     // this.hideFromImg()
+    // 相似颜色算法
+    // Euclidean_1 Euclidean_2 Euclidean_3
+    // CIE76
+    this.similarColorAlgorithm = config.similarColorAlgorithm || 'CIE76'
     this.pixelW = config.pixelW || 64
     this.pixelH = config.pixelH || 64
     this.palette = config.palette || [
@@ -36,6 +41,9 @@ export class Pixelit {
     this.width = config.width
     this.ctx = this.drawto.getContext('2d')
     this.paletteMap = {}
+    if (this.similarColorAlgorithm === 'CIE76') {
+      this.paletteLab = this.palette.map(color => RGB2Lab(...color))
+    }
   }
 
   /** hide from image */
@@ -80,6 +88,17 @@ export class Pixelit {
   setPalette (arr) {
     this.palette = arr
     return this
+  }
+
+  /**
+   *
+   * @param {string} similarColorAlgorithm
+   */
+  setSimilarColorAlgorithm (similarColorAlgorithm) {
+    this.similarColorAlgorithm = similarColorAlgorithm
+    if (this.similarColorAlgorithm === 'CIE76') {
+      this.paletteLab = this.palette.map(color => RGB2Lab(...color))
+    }
   }
 
   /**
@@ -134,14 +153,25 @@ export class Pixelit {
    */
 
   colorSim (rgbColor, compareColor) {
-    const [r1, g1, b1] = rgbColor
-    const [r2, g2, b2] = compareColor
-    const rmean = (r1 + r2) / 2
-    const R = r1 - r2
-    const G = g1 - g2
-    const B = b1 - b2
-    const d = (2 + rmean / 256) * R * R + 4 * G * G + (2 + (255 - rmean) / 256) * B * B
-    return Math.sqrt(d)
+    if (this.similarColorAlgorithm === 'Euclidean_3') {
+      const [r1, g1, b1] = rgbColor
+      const [r2, g2, b2] = compareColor
+      const rmean = (r1 + r2) / 2
+      const R = r1 - r2
+      const G = g1 - g2
+      const B = b1 - b2
+      const d = (2 + rmean / 256) * R * R + 4 * G * G + (2 + (255 - rmean) / 256) * B * B
+      return Math.sqrt(d)
+    }
+    if (this.similarColorAlgorithm === 'CIE76') {
+      const colorLab = RGB2Lab(...rgbColor)
+      const compareColorLab = RGB2Lab(...compareColor)
+      let d = 0
+      for (let i = 0; i < 3; i++) {
+        d += Math.pow(colorLab[i] - compareColorLab[i], 2)
+      }
+      return Math.sqrt(d)
+    }
   }
 
   /**
@@ -154,6 +184,12 @@ export class Pixelit {
   similarColor (actualColor) {
     let selectedColor = []
     let minSim = Infinity
+    // let palette
+    // if (this.similarColorAlgorithm === 'CIE76') {
+    //   palette = this.paletteLab
+    // } else {
+    //   palette = this.palette
+    // }
     this.palette.forEach((color) => {
       const currSim = this.colorSim(actualColor, color)
       if (currSim <= minSim) {
@@ -250,7 +286,7 @@ export class Pixelit {
         if (this.paletteMap[k]) {
           this.paletteMap[k].push(index++)
         } else {
-          this.paletteMap[k] = [index]
+          this.paletteMap[k] = [index++]
         }
       }
     }
@@ -312,7 +348,8 @@ export class Pixelit {
   }
 
   /**
-   * 填充数字
+   * 画分割线
+   * @return {Pixelit}
    */
   drawLine () {
     const w = this.drawto.width
@@ -336,43 +373,36 @@ export class Pixelit {
     return this
   }
 
+  /**
+   * 填充数字
+   * @return {Pixelit}
+   */
   fillNumbers () {
     const containColorKeys = Object.keys(this.paletteMap)
     const colors = this.palette.filter(c => containColorKeys.includes(`${c[0]},${c[1]},${c[2]}`))
     if (containColorKeys.length > 0) {
-      // const w = this.drawto.width
-      // const h = this.drawto.height
       const unit = this.drawto.width / this.pixelW
-      // var imgPixels = this.ctx.getImageData(0, 0, w, h)
       this.ctx.font = `${Math.floor(unit * 0.8)}px sans-serif`
       this.ctx.textBaseline = 'middle'
       this.ctx.textAlign = 'center'
+      const offset = 1
       for (let i = 0; i < colors.length; i++) {
         const c = colors[i]
         const k = `${c[0]},${c[1]},${c[2]}`
+        this.ctx.fillStyle = isLightColor(c[0], c[1], c[2]) ? '#000' : '#fff'
         for (let j = 0; j < this.paletteMap[k].length; j++) {
           const x = this.paletteMap[k][j] % this.pixelW
           const y = Math.floor(this.paletteMap[k][j] / this.pixelW)
-          this.ctx.fillText(`${i}`, x * unit + unit / 2, y * unit + unit / 2, unit)
+          this.ctx.fillText(`${i + 1}`, x * unit + unit / 2, y * unit + unit / 2 + offset, unit)
         }
       }
-      // for (let x = unit; x <= imgPixels.width; x += unit) {
-      //   for (let y = unit; y <= imgPixels.height; y += unit) {
-      //     this.ctx.fillText('1', x - unit / 2, y - unit / 2, unit)
-      //   }
-      // }
     }
     return this
-  }
-
-  getPaletteMap () {
-    return this.paletteMap
   }
 
   /**
    * Save image from canvas
    */
-
   saveImage () {
     const link = document.createElement('a')
     link.download = 'pxArt.png'
