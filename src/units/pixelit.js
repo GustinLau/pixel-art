@@ -65,7 +65,7 @@ export class Pixelit {
 
   /**
    *
-   * @param {elem} elem set element to read image from
+   * @param {Element} elem set element to read image from
    */
   setDrawFrom (elem) {
     this.drawfrom = elem
@@ -74,7 +74,7 @@ export class Pixelit {
 
   /**
    *
-   * @param {elem} elem set element canvas to write the image
+   * @param {Element} elem set element canvas to write the image
    */
   setDrawTo (elem) {
     this.drawto = elem
@@ -177,7 +177,6 @@ export class Pixelit {
   /**
    * given actualColor, check from the paletteColors the most aproximated color
    * @param {array} actualColor rgb color to compare [int,int,int]
-   * @param {array} paletteColors list of rgb colors to compare [[int,int,int]]
    * @returns {array} aproximated rgb color
    */
 
@@ -379,7 +378,7 @@ export class Pixelit {
    */
   fillNumbers () {
     const containColorKeys = Object.keys(this.paletteMap)
-    const colors = this.palette.filter(c => containColorKeys.includes(`${c[0]},${c[1]},${c[2]}`))
+    const colors = this.palette.filter(c => containColorKeys.includes(c.join(',')))
     if (containColorKeys.length > 0) {
       const unit = this.drawto.width / this.pixelW
       this.ctx.font = `${Math.floor(unit * 0.8)}px sans-serif`
@@ -388,7 +387,7 @@ export class Pixelit {
       const offset = 1
       for (let i = 0; i < colors.length; i++) {
         const c = colors[i]
-        const k = `${c[0]},${c[1]},${c[2]}`
+        const k = c.join(',')
         this.ctx.fillStyle = isLightColor(c[0], c[1], c[2]) ? '#000' : '#fff'
         for (let j = 0; j < this.paletteMap[k].length; j++) {
           const x = this.paletteMap[k][j] % this.pixelW
@@ -398,6 +397,23 @@ export class Pixelit {
       }
     }
     return this
+  }
+
+  /**
+   * 统计颜色数量
+   */
+  statistics () {
+    const containColorKeys = Object.keys(this.paletteMap)
+    const colors = this.palette.filter(c => containColorKeys.includes(c.join(',')))
+    return colors.map((c, index) => {
+      const k = c.join(',')
+      return {
+        no: index + 1,
+        color: k,
+        count: this.paletteMap[k].length,
+        isLightColor: isLightColor(...c)
+      }
+    })
   }
 
   /**
