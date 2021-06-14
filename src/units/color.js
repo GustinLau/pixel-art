@@ -9,6 +9,36 @@ export function isLightColor (r, g, b) {
   return 0.213 * r + 0.715 * g + 0.072 * b > 255 / 2
 }
 
+export function rgbArr2Hex (rgbArr) {
+  var strHex = '#'
+  // 转成16进制
+  for (let i = 0; i < rgbArr.length; i++) {
+    let hex = Number(rgbArr[i]).toString(16)
+    hex = hex.length === 1 ? '0' + hex : hex
+    strHex += hex
+  }
+  return strHex
+}
+
+export function hex2RGBArr (hex) {
+  // 把颜色值变成小写
+  hex = hex.toLowerCase()
+  // 如果只有三位的值，需变成六位，如：#fff => #ffffff
+  if (hex.length === 4) {
+    let colorNew = '#'
+    for (let i = 1; i < 4; i += 1) {
+      colorNew += hex.slice(i, i + 1).concat(hex.slice(i, i + 1))
+    }
+    hex = colorNew
+  }
+  // 处理六位的颜色值，转为RGB
+  const color = []
+  for (let i = 1; i < 7; i += 2) {
+    color.push(parseInt('0x' + hex.slice(i, i + 2)))
+  }
+  return color
+}
+
 export function RGB2XYZ (R, G, B) {
   const gamma = (c) => c > 0.04045 ? Math.pow((c + 0.055) / 1.055, 2.4) : c / 12.92
   const RR = gamma(R / 255)

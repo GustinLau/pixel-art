@@ -9,7 +9,7 @@ import './styles/index.scss'
 
 Vue.config.productionTip = false
 
-Vue.use(ElementUI)
+Vue.use(ElementUI, { size: 'small' })
 Vue.use(VueCropper)
 
 new Vue({

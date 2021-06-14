@@ -12,23 +12,22 @@
         :center-box="true"
         :high="false"
         :autoCrop="true"
+        mode="cover"
         :autoCropWidth="cropperSize.width"
         :autoCropHeight="cropperSize.height"
         @real-time="realTime"
       ></vue-cropper>
     </div>
     <div class="type-box">
-      <el-radio v-model="cropperType" label="64x64" border size="medium">64x64</el-radio>
-      <el-radio v-model="cropperType" label="64x96" border size="medium">64x96</el-radio>
+      <el-radio v-for="k of Object.keys(SIZE)" :key="k" v-model="cropperType"  :label="k" border>{{k}}</el-radio>
     </div>
   </div>
 </template>
 
 <script>
-const SIZE = {
-  '64x64': [64, 64],
-  '64x96': [64, 96]
-}
+
+import { SIZE } from '../constants'
+
 export default {
   name: 'Cropper',
   props: {
@@ -49,6 +48,7 @@ export default {
     }
   },
   computed: {
+    SIZE: () => SIZE,
     cropperSize () {
       const [width, height] = SIZE[this.cropperType]
       return {

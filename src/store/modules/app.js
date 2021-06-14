@@ -1,5 +1,6 @@
 const state = {
   croppedImageInfo: null,
+  colors: localStorage.getItem('palette') ? JSON.parse(localStorage.getItem('palette')) : [],
   config: {
     algorithm: 'CIE76',
     drawLine: true,
@@ -15,6 +16,9 @@ const mutations = {
   },
   SET_CONFIG: (state, config) => {
     state.config = config
+  },
+  SET_COLORS: (state, colors) => {
+    state.colors = colors
   }
 }
 
@@ -24,6 +28,10 @@ const actions = {
   },
   setConfig ({ commit }, config) {
     commit('SET_CONFIG', config)
+  },
+  setColors ({ commit }, colors) {
+    localStorage.setItem('palette', JSON.stringify(colors))
+    commit('SET_COLORS', colors)
   }
 }
 

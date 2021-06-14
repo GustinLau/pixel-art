@@ -22,6 +22,7 @@
 <script>
 import { Pixelit } from '../units/pixelit'
 import Sidebar from '../components/Sidebar'
+import { hex2RGBArr } from '../units/color'
 
 export default {
   name: 'Home',
@@ -36,6 +37,12 @@ export default {
   computed: {
     config () {
       return this.$store.state.app.config
+    },
+    palette () {
+      return this.$store.state.app.colors.map(color => hex2RGBArr(color.value))
+    },
+    havePalette () {
+      return this.palette.length > 0
     }
   },
   watch: {
@@ -54,6 +61,11 @@ export default {
       deep: true,
       handler () {
         this.statistics = null
+        this.draw()
+      }
+    },
+    '$store.state.app.colors' () {
+      if (this.showCanvas) {
         this.draw()
       }
     }
@@ -79,56 +91,7 @@ export default {
         similarColorAlgorithm: algorithm,
         pixelW: width,
         pixelH: height,
-        palette: [
-          // 1-黄色
-          [213, 197, 32],
-          // 2-蓝灰
-          [152, 176, 204],
-          // 3-绿色-千岁绿
-          [29, 108, 78],
-          // 4-肤色-练色
-          [213, 196, 161],
-          // 5-淡粉-丁香色
-          [192, 160, 224],
-          // 6-黑色
-          [0, 0, 0],
-          // 7-白色
-          [240, 240, 240],
-          // 8-深棕-枯茶
-          [81, 49, 39],
-          // 9-银灰-钝色
-          [86, 89, 92],
-          // 10-浅蓝
-          [124, 152, 174],
-          // 11-草绿-豆青
-          [132, 190, 61],
-          // 12-红-真红
-          [146, 10, 9],
-          // 13-紫红-品红
-          [196, 0, 152],
-          // 14=淡灰
-          [164, 169, 167],
-          // 15-淡棕色
-          [116, 94, 65],
-          // 16-浅棕色
-          [141, 109, 65],
-          // 17-虾黄
-          [186, 143, 94],
-          // 18-浅澄
-          [251, 153, 102],
-          // 19-橙色
-          [234, 139, 93],
-          // 20-蓝色
-          [53, 93, 181],
-          // 21-紫蓝色
-          [21, 0, 87],
-          // 22-紫色
-          [75, 33, 93],
-          // 23-浅绿
-          [78, 167, 181],
-          // 24-墨绿
-          [29, 73, 66]
-        ],
+        palette: this.palette,
         height: width * ratio,
         width: height * width
       })
@@ -137,7 +100,7 @@ export default {
         .setWidth(width)
         .setHeight(height)
         .resizeImage()
-      if (palette) {
+      if (this.havePalette && palette) {
         px.convertPalette()
       }
       px.setWidth(width * ratio)
@@ -146,10 +109,10 @@ export default {
       if (drawLine) {
         px.drawLine()
       }
-      if (fillNums) {
+      if (this.havePalette && fillNums) {
         px.fillNumbers()
       }
-      if (statistics) {
+      if (this.havePalette && statistics) {
         this.statistics = px.statistics()
       }
     }

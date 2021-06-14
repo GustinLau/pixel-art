@@ -12,7 +12,7 @@
           <i class="el-icon-upload"></i>
           <div class="el-upload__text">将图片拖到此处，或<em data-v-7d622f5c="">点击上传</em></div>
         </div>
-        <input ref="input" accept="accept" type="file" name="file" @change="handleChange" class="el-upload__input">
+        <input ref="input" :accept="accept" type="file" name="file" @change="handleChange" class="el-upload__input">
       </div>
     </template>
     <template v-else-if="!croppedInfo">
@@ -40,8 +40,8 @@
                :close-on-press-escape="false" width="600px" :show-close="false" :destroy-on-close="true">
       <cropper ref="cropper" type="64x64" :image="file" @real-time-html="handleRealTimeChange"/>
       <div slot="footer">
+        <el-button @click="close">取消</el-button>
         <el-button type="primary" @click="submit">确定</el-button>
-        <el-button type="danger" plain @click="close">取消</el-button>
       </div>
     </el-dialog>
   </div>
@@ -172,7 +172,7 @@ export default {
             }
             return false
           })
-      }))
+      })[0])
     }
   }
 }

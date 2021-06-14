@@ -7,7 +7,7 @@
     <el-row>
       <el-col :span="24">
         <div class="upload">
-          <uploader/>
+          <uploader accept="image/jpeg,image/png"/>
         </div>
       </el-col>
     </el-row>
@@ -38,9 +38,9 @@
       <el-col :span="18">
         <div class="mode-group">
           <el-checkbox v-model="config.drawLine">像素描边</el-checkbox>
-          <el-checkbox v-model="config.palette">调色板</el-checkbox>
-          <el-checkbox v-model="config.fillNums" :disabled="!config.palette">填充数字</el-checkbox>
-          <el-checkbox v-model="config.statistics" :disabled="!config.palette">统计</el-checkbox>
+          <el-checkbox v-model="config.palette" :disabled="!havePalette">调色板</el-checkbox>
+          <el-checkbox v-model="config.fillNums" :disabled="!havePalette || !config.palette">填充数字</el-checkbox>
+          <el-checkbox v-model="config.statistics" :disabled="!havePalette || !config.palette">统计</el-checkbox>
         </div>
       </el-col>
     </el-row>
@@ -50,7 +50,8 @@
       </el-col>
       <el-col :span="18">
         <div class="mode-group">
-          <el-slider v-model="brightness" :min="-100" :max="100" :format-tooltip="formatTooltip"></el-slider>
+          <el-slider v-model="brightness" :min="-100" :max="100" :format-tooltip="formatTooltip"
+                     :disabled="!canvasShowed"/>
         </div>
       </el-col>
     </el-row>
@@ -60,7 +61,8 @@
       </el-col>
       <el-col :span="18">
         <div class="mode-group">
-          <el-slider v-model="contrast" :min="-100" :max="100" :format-tooltip="formatTooltip"></el-slider>
+          <el-slider v-model="contrast" :min="-100" :max="100" :format-tooltip="formatTooltip"
+                     :disabled="!canvasShowed"/>
         </div>
       </el-col>
     </el-row>
@@ -70,11 +72,12 @@
       </el-col>
       <el-col :span="18">
         <div class="mode-group">
-          <el-slider v-model="saturation" :min="-100" :max="100" :format-tooltip="formatTooltip"></el-slider>
+          <el-slider v-model="saturation" :min="-100" :max="100" :format-tooltip="formatTooltip"
+                     :disabled="!canvasShowed"/>
         </div>
       </el-col>
     </el-row>
-    <el-button icon="el-icon-download" type="primary">下载图片</el-button>
+    <el-button icon="el-icon-download" type="primary" :disabled="!canvasShowed">下载图片</el-button>
   </div>
 </template>
 
@@ -99,7 +102,13 @@ export default {
     }
   },
   computed: {
-    ALGORITHMS: () => ALGORITHMS
+    ALGORITHMS: () => ALGORITHMS,
+    canvasShowed () {
+      return !!this.$store.state.app.croppedImageInfo
+    },
+    havePalette () {
+      return this.$store.state.app.colors.length > 0
+    }
   },
   watch: {
     config: {
@@ -107,6 +116,11 @@ export default {
       handler (val) {
         this.$store.dispatch('app/setConfig', val)
       }
+    },
+    '$store.state.app.croppedImageInfo' () {
+      this.brightness = 0
+      this.contrast = 0
+      this.saturation = 0
     }
   },
   methods: {

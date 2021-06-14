@@ -3,20 +3,16 @@
     <el-link :underline="false" @click="drawerVisible = true">
       <i class="el-icon-brush"></i>
     </el-link>
-    <el-drawer
-      title="调色板"
-      :visible.sync="drawerVisible"
-      direction="ltr"
-      :append-to-body="true"
-    >
-      <span>我来啦!</span>
-    </el-drawer>
+    <palette :visible.sync="drawerVisible"/>
   </div>
 </template>
 
 <script>
+
+import Palette from './Palette/index'
 export default {
   name: 'Setting',
+  components: { Palette },
   data () {
     return {
       drawerVisible: false
