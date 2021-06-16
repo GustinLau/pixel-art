@@ -7,7 +7,7 @@
     <el-row>
       <el-col :span="24">
         <div class="upload">
-          <uploader accept="image/jpeg,image/png"/>
+          <uploader ref="uploader" accept="image/jpeg,image/png"/>
         </div>
       </el-col>
     </el-row>
@@ -51,18 +51,7 @@
       <el-col :span="18">
         <div class="mode-group">
           <el-slider v-model="brightness" :min="-100" :max="100" :format-tooltip="formatTooltip"
-                     :disabled="!canvasShowed"/>
-        </div>
-      </el-col>
-    </el-row>
-    <el-row :gutter="16">
-      <el-col :span="6">
-        <label class="label">对比度</label>
-      </el-col>
-      <el-col :span="18">
-        <div class="mode-group">
-          <el-slider v-model="contrast" :min="-100" :max="100" :format-tooltip="formatTooltip"
-                     :disabled="!canvasShowed"/>
+                     :disabled="!canvasShowed" @change="handleBrightnessChange"/>
         </div>
       </el-col>
     </el-row>
@@ -73,7 +62,18 @@
       <el-col :span="18">
         <div class="mode-group">
           <el-slider v-model="saturation" :min="-100" :max="100" :format-tooltip="formatTooltip"
-                     :disabled="!canvasShowed"/>
+                     :disabled="!canvasShowed" @change="handleSaturationChange"/>
+        </div>
+      </el-col>
+    </el-row>
+    <el-row :gutter="16">
+      <el-col :span="6">
+        <label class="label">对比度</label>
+      </el-col>
+      <el-col :span="18">
+        <div class="mode-group">
+          <el-slider v-model="contrast" :min="-100" :max="100" :format-tooltip="formatTooltip"
+                     :disabled="!canvasShowed" @change="handleContrastChange"/>
         </div>
       </el-col>
     </el-row>
@@ -85,6 +85,7 @@
 import Setting from './Setting'
 import Uploader from './Uploader'
 import { ALGORITHMS } from '../constants'
+import { adjust } from '../units/image'
 
 export default {
   name: 'Sidebar',
@@ -104,10 +105,13 @@ export default {
   computed: {
     ALGORITHMS: () => ALGORITHMS,
     canvasShowed () {
-      return !!this.$store.state.app.croppedImageInfo
+      return !!this.croppedImageInfo
     },
     havePalette () {
       return this.$store.state.app.colors.length > 0
+    },
+    croppedImageInfo () {
+      return this.$store.state.app.croppedImageInfo
     }
   },
   watch: {
@@ -117,15 +121,56 @@ export default {
         this.$store.dispatch('app/setConfig', val)
       }
     },
-    '$store.state.app.croppedImageInfo' () {
-      this.brightness = 0
-      this.contrast = 0
-      this.saturation = 0
+    croppedImageInfo (newValue, oldValue) {
+      if (!newValue || !oldValue || newValue.originUrl !== oldValue.originUrl) {
+        this.brightness = 0
+        this.contrast = 0
+        this.saturation = 0
+      }
     }
   },
   methods: {
     formatTooltip (val) {
-      return val / 100
+      return val
+    },
+    handleBrightnessChange (value) {
+      adjust(this.croppedImageInfo.originEl, {
+        width: this.croppedImageInfo.scaleWidth,
+        height: this.croppedImageInfo.scaleHeight,
+        l: value / 100,
+        s: this.saturation / 100,
+        c: this.contrast / 100
+      })
+        .then(blob => {
+          this.$refs.uploader.adjustCroppedInfoUrl(URL.createObjectURL(blob))
+          URL.revokeObjectURL(blob)
+        })
+    },
+    handleSaturationChange (value) {
+      adjust(this.croppedImageInfo.originEl, {
+        width: this.croppedImageInfo.scaleWidth,
+        height: this.croppedImageInfo.scaleHeight,
+        s: value / 100,
+        l: this.brightness / 100,
+        c: this.contrast / 100
+      })
+        .then(blob => {
+          this.$refs.uploader.adjustCroppedInfoUrl(URL.createObjectURL(blob))
+          URL.revokeObjectURL(blob)
+        })
+    },
+    handleContrastChange (value) {
+      adjust(this.croppedImageInfo.originEl, {
+        width: this.croppedImageInfo.scaleWidth,
+        height: this.croppedImageInfo.scaleHeight,
+        c: value / 100,
+        s: this.saturation / 100,
+        l: this.brightness / 100
+      })
+        .then(blob => {
+          this.$refs.uploader.adjustCroppedInfoUrl(URL.createObjectURL(blob))
+          URL.revokeObjectURL(blob)
+        })
     }
   }
 }
@@ -163,7 +208,7 @@ export default {
   .label {
     display: block;
     width: 100%;
-    line-height: 40px;
+    line-height: 32px;
     text-align: right;
   }
 

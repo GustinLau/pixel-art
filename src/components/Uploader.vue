@@ -27,6 +27,7 @@
              :style="{ width: croppedInfo.width+'px', height: croppedInfo.height+'px' }">
           <div :style="{ width: croppedInfo.width+'px', height: croppedInfo.height+'px' }">
             <img ref="croppedImage" :src="croppedInfo.url" alt="" @load="onCroppedImageLoaded"/>
+            <img ref="croppedImageOriginal" :src="croppedInfo.originUrl" alt="" style="display: none"/>
           </div>
         </div>
         <div class="actions">
@@ -97,10 +98,17 @@ export default {
       this.file = null
       this.$emit('close')
     },
+    adjustCroppedInfoUrl (url) {
+      this.croppedInfo.url = url
+    },
     // 裁剪图片加载完毕
     onCroppedImageLoaded () {
       this.$store.dispatch('app/setCroppedImageInfo', {
         el: this.$refs.croppedImage,
+        originEl: this.$refs.croppedImageOriginal,
+        originUrl: this.croppedInfo.originUrl,
+        scaleWidth: this.croppedInfo.width,
+        scaleHeight: this.croppedInfo.height,
         width: this.croppedInfo.originWidth,
         height: this.croppedInfo.originHeight
       })
@@ -118,6 +126,7 @@ export default {
     handleFileChange (file) {
       if (file) {
         this.file = URL.createObjectURL(file)
+        URL.revokeObjectURL(file)
       } else {
         this.file = null
       }

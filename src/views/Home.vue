@@ -22,7 +22,7 @@
 <script>
 import { Pixelit } from '../units/pixelit'
 import Sidebar from '../components/Sidebar'
-import { hex2RGBArr } from '../units/color'
+import { HEX2RGB } from '../units/color'
 
 export default {
   name: 'Home',
@@ -39,7 +39,7 @@ export default {
       return this.$store.state.app.config
     },
     palette () {
-      return this.$store.state.app.colors.map(color => hex2RGBArr(color.value))
+      return this.$store.state.app.colors.map(color => HEX2RGB(color.value))
     },
     havePalette () {
       return this.palette.length > 0

@@ -212,7 +212,7 @@ export default {
 
 .palette-container {
   width: 392px;
-  padding: 0 20px 40px 20px;
+  padding: 0 20px 56px 20px;
 
   .palette-color:nth-child(4n) {
     margin-right: 0;
@@ -230,8 +230,8 @@ export default {
 }
 
 .footer {
-  position: absolute;
-  width: 100%;
+  position: fixed;
+  width: 392px;
   bottom: 0;
   left: 0;
   padding: 8px 0;

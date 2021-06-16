@@ -19,7 +19,7 @@
       ></vue-cropper>
     </div>
     <div class="type-box">
-      <el-radio v-for="k of Object.keys(SIZE)" :key="k" v-model="cropperType"  :label="k" border>{{k}}</el-radio>
+      <el-radio v-for="k of Object.keys(SIZE)" :key="k" v-model="cropperType" :label="k" border>{{ k }}</el-radio>
     </div>
   </div>
 </template>
@@ -85,8 +85,11 @@ export default {
     crop () {
       return new Promise(resolve => {
         this.$refs.cropper.getCropBlob(data => {
+          const url = window.URL.createObjectURL(data)
+          URL.revokeObjectURL(data)
           resolve({
-            url: window.URL.createObjectURL(data),
+            originUrl: url,
+            url,
             originWidth: this.cropperSize.originWidth,
             originHeight: this.cropperSize.originHeight,
             width: this.cropperSize.width,

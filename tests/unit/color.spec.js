@@ -1,4 +1,4 @@
-import { RGB2HSL, RGB2HSV, RGB2Lab } from '../../src/units/color'
+import { HSL2RGB, RGB2HSL, RGB2HSV, RGB2Lab } from '../../src/units/color'
 
 describe('color.js', () => {
   it('RGB2Lab', () => {
@@ -9,5 +9,8 @@ describe('color.js', () => {
   })
   it('RGB2HSL', () => {
     expect(RGB2HSL(127, 207, 112).map(i => i.toFixed(2)).join(',')).toMatch('110.53,0.50,0.63')
+  })
+  it('SWITCH-RGB', () => {
+    expect(HSL2RGB(...RGB2HSL(127, 207, 112)).join(',')).toMatch('127,207,112')
   })
 })
