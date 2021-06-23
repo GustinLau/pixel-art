@@ -77,7 +77,9 @@
         </div>
       </el-col>
     </el-row>
-    <el-button icon="el-icon-download" type="primary" :disabled="!canvasShowed">下载图片</el-button>
+    <el-button icon="el-icon-download" type="primary" :disabled="!canvasShowed" :loading="downloading"
+               @click="download">下载图片
+    </el-button>
   </div>
 </template>
 
@@ -85,7 +87,7 @@
 import Setting from './Setting'
 import Uploader from './Uploader'
 import { ALGORITHMS } from '../constants'
-import { adjust } from '../units/image'
+import { adjust, download } from '../units/image'
 
 export default {
   name: 'Sidebar',
@@ -93,9 +95,17 @@ export default {
     Uploader,
     Setting
   },
+  props: {
+    pixelit: {
+      type: Object,
+      default: null,
+      required: false
+    }
+  },
   data () {
     const config = { ...this.$store.state.app.config }
     return {
+      downloading: false,
       config,
       brightness: 0,
       contrast: 0,
@@ -170,6 +180,22 @@ export default {
         .then(blob => {
           this.$refs.uploader.adjustCroppedInfoUrl(URL.createObjectURL(blob))
           URL.revokeObjectURL(blob)
+        })
+    },
+    download () {
+      this.downloading = true
+      download({
+        el: document.getElementById('baseCanvasUrl'),
+        palette: this.pixelit.getPalette(),
+        paletteMap: this.pixelit.getPaletteMap(),
+        pixelW: this.croppedImageInfo.width,
+        pixelH: this.croppedImageInfo.height,
+        havePalette: this.havePalette && this.config.palette,
+        fillNums: true,
+        drawLine: true
+      })
+        .then(() => {
+          this.downloading = false
         })
     }
   }

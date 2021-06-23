@@ -145,6 +145,10 @@ export class Pixelit {
     return this.palette
   }
 
+  getPaletteMap () {
+    return this.paletteMap
+  }
+
   /**
    * color similarity between colors, lower is better
    * @param {array} rgbColor array of ints to make a rgb color: [int,int,int]
@@ -378,8 +382,8 @@ export class Pixelit {
    */
   fillNumbers () {
     const containColorKeys = Object.keys(this.paletteMap)
-    const colors = this.palette.filter(c => containColorKeys.includes(c.join(',')))
     if (containColorKeys.length > 0) {
+      const colors = this.palette.filter(c => containColorKeys.includes(c.join(',')))
       const unit = this.drawto.width / this.pixelW
       this.ctx.font = `${Math.floor(unit * 0.8)}px sans-serif`
       this.ctx.textBaseline = 'middle'

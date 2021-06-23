@@ -1,11 +1,12 @@
 <template>
   <div class="home">
     <div class="sidebar">
-      <sidebar/>
+      <sidebar :pixelit="px"/>
     </div>
     <div class="container">
       <template v-if="showCanvas">
-        <canvas class="canvas" ref="canvas"></canvas>
+        <canvas class="canvas" :class="{hidden:!canvasReady}" ref="canvas"></canvas>
+        <img id="baseCanvasUrl" class="hidden" ref="baseCanvasUrl" alt=""/>
         <div class="statistics" v-if="statistics">
           <div v-for="(item,idx) of statistics" :key="idx" class="statistics-box">
             <div class="color" :style="{background: `rgba(${item.color})`,color:item.isLightColor ? '#000' : '#fff' }">
@@ -29,9 +30,11 @@ export default {
   components: { Sidebar },
   data () {
     return {
+      px: null,
       croppedImageInfo: null,
       showCanvas: false,
-      statistics: null
+      statistics: null,
+      canvasReady: false
     }
   },
   computed: {
@@ -51,6 +54,11 @@ export default {
       this.$nextTick(() => {
         this.croppedImageInfo = info
       })
+    },
+    showCanvas (val) {
+      if (!val) {
+        this.canvasReady = false
+      }
     },
     croppedImageInfo (info) {
       if (info) {
@@ -84,37 +92,41 @@ export default {
         fillNums,
         statistics
       } = this.config
-      const ratio = 512 / width
-      const px = new Pixelit({
+      const ratio = 800 / width
+      this.px = new Pixelit({
         to: this.$refs.canvas,
         from: el,
         similarColorAlgorithm: algorithm,
         pixelW: width,
         pixelH: height,
         palette: this.palette,
-        height: width * ratio,
-        width: height * width
+        width: width * ratio,
+        height: height * ratio
       })
-      px.draw()
+      this.px.draw()
         .pixelate()
         .setWidth(width)
         .setHeight(height)
         .resizeImage()
       if (this.havePalette && palette) {
-        px.convertPalette()
+        this.px.convertPalette()
       }
-      px.setWidth(width * ratio)
-        .setHeight(height * ratio)
-        .resizeImage()
-      if (drawLine) {
-        px.drawLine()
-      }
-      if (this.havePalette && fillNums) {
-        px.fillNumbers()
-      }
-      if (this.havePalette && statistics) {
-        this.statistics = px.statistics()
-      }
+      this.$refs.canvas.toBlob((blobObj) => {
+        this.$refs.baseCanvasUrl.src = window.URL.createObjectURL(blobObj)
+        this.px.setWidth(width * ratio)
+          .setHeight(height * ratio)
+          .resizeImage()
+        if (drawLine) {
+          this.px.drawLine()
+        }
+        if (this.havePalette && fillNums) {
+          this.px.fillNumbers()
+        }
+        if (this.havePalette && statistics) {
+          this.statistics = this.px.statistics()
+        }
+        this.canvasReady = true
+      })
     }
   }
 }
@@ -135,14 +147,25 @@ export default {
 
   .container {
     margin-left: 392px;
+    padding: 16px 0;
     display: flex;
     flex-direction: column;
     flex: 1;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
+    overflow: auto;
+
+    .hidden {
+      display: none;
+    }
 
     .statistics {
       margin-top: 32px;
+      width: 100%;
+      display: flex;
+      flex-flow: wrap;
+      box-sizing: border-box;
+      padding: 0 16px;
 
       .statistics-box {
         display: inline-block;
