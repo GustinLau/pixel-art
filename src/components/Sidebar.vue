@@ -15,7 +15,7 @@
       <el-col :span="6">
         <label class="label">颜色算法</label>
       </el-col>
-      <el-col :span="15">
+      <el-col :span="18">
         <el-select v-model="config.algorithm" class="control" placeholder="请选择">
           <el-option
             v-for="item in ALGORITHMS"
@@ -24,11 +24,6 @@
             :value="item.key">
           </el-option>
         </el-select>
-      </el-col>
-      <el-col :span="2">
-        <el-tooltip class="item" effect="dark" content="Right Center 提示文字" placement="right">
-          <i class="label el-icon-question"></i>
-        </el-tooltip>
       </el-col>
     </el-row>
     <el-row :gutter="16">
@@ -86,8 +81,8 @@
 <script>
 import Setting from './Setting'
 import Uploader from './Uploader'
-import { ALGORITHMS } from '../constants'
 import { adjust, download } from '../units/image'
+import { ALGORITHMS } from '../units/pixelit'
 
 export default {
   name: 'Sidebar',
@@ -113,7 +108,10 @@ export default {
     }
   },
   computed: {
-    ALGORITHMS: () => ALGORITHMS,
+    ALGORITHMS: () => Object.keys(ALGORITHMS).map(k => ({
+      key: k,
+      value: k
+    })),
     canvasShowed () {
       return !!this.croppedImageInfo
     },

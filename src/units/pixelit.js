@@ -3,7 +3,20 @@
  * @author José Moreira @ <https://github.com/giventofly/pixelit>
  **/
 
-import { isLightColor, RGB2Lab } from './color'
+import { CIEDE2000, CIEDE76, CIEDE94, cmc, euclidean1, euclidean2, euclidean3, isLightColor, RGB2Lab } from './color'
+
+export const ALGORITHMS = {
+  CIE76: 'CIE76',
+  CIE94: 'CIE94',
+  CIE2000: 'CIE2000',
+  Euclidean_1: 'Euclidean_1',
+  Euclidean_2: 'Euclidean_2',
+  Euclidean_3: 'Euclidean_3',
+  CMC: 'CMC'
+}
+
+// Lab空间颜色算法
+const LAB_ALGORITHMS = [ALGORITHMS.CIE76, ALGORITHMS.CIE94, ALGORITHMS.CIE2000, ALGORITHMS.CMC]
 
 export class Pixelit {
   constructor (config = {}) {
@@ -11,12 +24,8 @@ export class Pixelit {
     this.drawto = config.to || document.getElementById('pixelitcanvas')
     // origin of uploaded image/src img
     this.drawfrom = config.from || document.getElementById('pixelitimg')
-    // hide image element
-    // this.hideFromImg()
     // 相似颜色算法
-    // Euclidean_1 Euclidean_2 Euclidean_3
-    // CIE76
-    this.similarColorAlgorithm = config.similarColorAlgorithm || 'CIE76'
+    this.similarColorAlgorithm = config.similarColorAlgorithm || ALGORITHMS.CIE76
     this.pixelW = config.pixelW || 64
     this.pixelH = config.pixelH || 64
     this.palette = config.palette || [
@@ -41,8 +50,11 @@ export class Pixelit {
     this.width = config.width
     this.ctx = this.drawto.getContext('2d')
     this.paletteMap = {}
-    if (this.similarColorAlgorithm === 'CIE76') {
-      this.paletteLab = this.palette.map(color => RGB2Lab(...color))
+    this.paletteLab = {}
+    if (LAB_ALGORITHMS.includes(this.similarColorAlgorithm)) {
+      this.palette.map(color => RGB2Lab(...color)).forEach((color, idx) => {
+        this.paletteLab[this.palette[idx].join(',')] = color
+      })
     }
   }
 
@@ -96,8 +108,11 @@ export class Pixelit {
    */
   setSimilarColorAlgorithm (similarColorAlgorithm) {
     this.similarColorAlgorithm = similarColorAlgorithm
-    if (this.similarColorAlgorithm === 'CIE76') {
-      this.paletteLab = this.palette.map(color => RGB2Lab(...color))
+    if (LAB_ALGORITHMS.includes(this.similarColorAlgorithm)) {
+      this.paletteLab = {}
+      this.palette.map(color => RGB2Lab(...color)).forEach((color, idx) => {
+        this.paletteLab[this.palette[idx].join(',')] = color
+      })
     }
   }
 
@@ -151,30 +166,33 @@ export class Pixelit {
 
   /**
    * color similarity between colors, lower is better
-   * @param {array} rgbColor array of ints to make a rgb color: [int,int,int]
-   * @param {array} compareColor array of ints to make a rgb color: [int,int,int]
+   * @param {array} color array of ints to make a color: [double,double,double]
+   * @param {array} compareColor array of ints to make a color: [double,double,double]
+   * @param {string} type type of color default rgb
    * @returns {number} limits [0-441.6729559300637]
    */
 
-  colorSim (rgbColor, compareColor) {
-    if (this.similarColorAlgorithm === 'Euclidean_3') {
-      const [r1, g1, b1] = rgbColor
-      const [r2, g2, b2] = compareColor
-      const rmean = (r1 + r2) / 2
-      const R = r1 - r2
-      const G = g1 - g2
-      const B = b1 - b2
-      const d = (2 + rmean / 256) * R * R + 4 * G * G + (2 + (255 - rmean) / 256) * B * B
-      return Math.sqrt(d)
+  colorSim (color, compareColor, type = 'RGB') {
+    if (this.similarColorAlgorithm === ALGORITHMS.Euclidean_1) {
+      return euclidean1(color, compareColor)
     }
-    if (this.similarColorAlgorithm === 'CIE76') {
-      const colorLab = RGB2Lab(...rgbColor)
-      const compareColorLab = RGB2Lab(...compareColor)
-      let d = 0
-      for (let i = 0; i < 3; i++) {
-        d += Math.pow(colorLab[i] - compareColorLab[i], 2)
-      }
-      return Math.sqrt(d)
+    if (this.similarColorAlgorithm === ALGORITHMS.Euclidean_2) {
+      return euclidean2(color, compareColor)
+    }
+    if (this.similarColorAlgorithm === ALGORITHMS.Euclidean_3) {
+      return euclidean3(color, compareColor)
+    }
+    if (this.similarColorAlgorithm === ALGORITHMS.CIE76) {
+      return CIEDE76(color, compareColor)
+    }
+    if (this.similarColorAlgorithm === ALGORITHMS.CIE94) {
+      return CIEDE94(color, compareColor)
+    }
+    if (this.similarColorAlgorithm === ALGORITHMS.CIE2000) {
+      return CIEDE2000(color, compareColor)
+    }
+    if (this.similarColorAlgorithm === ALGORITHMS.CMC) {
+      return cmc(color, compareColor)
     }
   }
 
@@ -187,14 +205,17 @@ export class Pixelit {
   similarColor (actualColor) {
     let selectedColor = []
     let minSim = Infinity
-    // let palette
-    // if (this.similarColorAlgorithm === 'CIE76') {
-    //   palette = this.paletteLab
-    // } else {
-    //   palette = this.palette
-    // }
+    let type = 'RGB'
+    if ([ALGORITHMS.CIE76, ALGORITHMS.CIE94, ALGORITHMS.CIE2000].includes(this.similarColorAlgorithm)) {
+      actualColor = RGB2Lab(...actualColor)
+      type = 'Lab'
+    }
     this.palette.forEach((color) => {
-      const currSim = this.colorSim(actualColor, color)
+      let _color = color
+      if ([ALGORITHMS.CIE76, ALGORITHMS.CIE94, ALGORITHMS.CIE2000].includes(this.similarColorAlgorithm)) {
+        _color = this.paletteLab[color.join(',')]
+      }
+      const currSim = this.colorSim(actualColor, _color, type)
       if (currSim <= minSim) {
         selectedColor = color
         minSim = currSim
