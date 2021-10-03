@@ -1,18 +1,23 @@
-参考资料：
+# 像素画
 
-颜色空间转换：  
+上传图片转换成像素画。
+![screenshot](screenshot/screenshot.png)
+
+# 参考资料
+
+## 颜色空间转换
 https://github.com/brehaut/color-js  
 
-亮度、饱和度调整：  
+## 亮度、饱和度调整
 https://github.com/chenshenhai/pictool
 
-颜色差异算法：  
+## 颜色差异算法
 https://zh.wikipedia.org/wiki/%E9%A2%9C%E8%89%B2%E5%B7%AE%E5%BC%82#CIEDE2000
 https://github.com/kenlimmj/empfindung  
 https://github.com/Evercoder/d3-color-difference  
 https://github.com/gfiumara/CIEDE2000  
 
-对比度的原理：
+## 对比度的原理（来源于网络）
 > Photoshop对比度算法。可以用下面的公式来表示：
 > 
 > (1)nRGB = RGB + (RGB - Threshold) * Contrast / 255

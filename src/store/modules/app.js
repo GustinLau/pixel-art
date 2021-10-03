@@ -1,6 +1,8 @@
+import { DEFAULT_COLORS } from '../../constants'
+
 const state = {
   croppedImageInfo: null,
-  colors: localStorage.getItem('palette') ? JSON.parse(localStorage.getItem('palette')) : [],
+  colors: localStorage.getItem('palette') ? JSON.parse(localStorage.getItem('palette')) : DEFAULT_COLORS,
   config: {
     algorithm: 'CIE76',
     drawLine: true,
