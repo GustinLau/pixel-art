@@ -15,8 +15,9 @@ module.exports = {
    * In most cases please use '/' !!!
    * Detail: https://cli.vuejs.org/config/#publicpath
    */
-  // outputDir: 'dist/',
-  // assetsDir: 'static',
+  outputDir: 'dist',
+  assetsDir: 'static',
+  publicPath: '/pixel-art/',
   devServer: {
     port: 8080,
     open: true,

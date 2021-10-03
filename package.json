@@ -34,6 +34,7 @@
     "eslint-plugin-vue": "^6.2.2",
     "node-sass": "^4.12.0",
     "sass-loader": "^8.0.2",
+    "script-ext-html-webpack-plugin": "^2.1.5",
     "vue-template-compiler": "^2.6.11"
   }
 }
