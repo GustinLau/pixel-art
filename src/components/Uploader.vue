@@ -202,7 +202,7 @@ export default {
     border: 1px solid rgb(217, 217, 217);
     border-radius: 6px;
 
-    /deep/ {
+    ::v-deep {
       .show-preview {
         margin: 0 auto;
 
