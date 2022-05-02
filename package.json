@@ -6,6 +6,7 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "preview": "node ./build/preview.js",
+    "deploy": "bash deploy.sh",
     "test:unit": "vue-cli-service test:unit",
     "lint": "vue-cli-service lint"
   },
