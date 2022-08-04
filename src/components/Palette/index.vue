@@ -213,7 +213,7 @@ export default {
 .palette-container {
   width: 392px;
   padding: 0 20px 56px 20px;
-
+  box-sizing: content-box;
   .palette-color:nth-child(4n) {
     margin-right: 0;
   }
